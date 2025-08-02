@@ -1,44 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { executeQuery } from '../services/duckdbService';
+import React, { useState } from 'react';
+import { useDuckDB } from '../hooks/useDuckDB';
 import { Link } from 'react-router-dom';
+import StatsTable from '../components/StatsTable';
 
 const PlayersIndex = () => {
-  const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { data: players, loading, error } = useDuckDB(
+    `SELECT player_id, player_name, is_active, is_hall_of_famer FROM Players WHERE player_name LIKE ? COLLATE NOCASE ORDER BY player_name ASC`,
+    [`%${searchTerm}%`]
+  );
 
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        setLoading(true);
-        // Query to get player_id, player_name, is_active, and is_hall_of_famer from the Players table
-        // The Players table is now created from "Player Directory.csv" in duckdbService.js
-        const query = `
-          SELECT
-            player_id,
-            player_name,
-            is_active,
-            is_hall_of_famer
-          FROM Players
-          WHERE player_name LIKE ? COLLATE NOCASE
-          ORDER BY player_name ASC
-        `;
-        const result = await executeQuery(query, [`%${searchTerm}%`]);
-        setPlayers(result);
-      } catch (err) {
-        console.error("Error fetching players:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlayers();
-  }, [searchTerm]);
+  const columns = [
+    {
+      key: 'player_name',
+      label: 'Player',
+      sortable: true,
+      render: (player) => (
+        <Link to={`/players/${player.player_id}`}>
+          <span style={{ fontWeight: player.is_active ? 'bold' : 'normal' }}>
+            {player.player_name}{player.is_hall_of_famer ? ' *' : ''}
+          </span>
+        </Link>
+      ),
+    },
+  ];
 
   if (loading) return <div>Loading players...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
@@ -49,17 +37,7 @@ const PlayersIndex = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <ul>
-        {players.map((player) => (
-          <li key={player.player_id}>
-            <Link to={`/players/${player.player_id}`}>
-              <span style={{ fontWeight: player.is_active ? 'bold' : 'normal' }}>
-                {player.player_name}{player.is_hall_of_famer ? ' *' : ''}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <StatsTable data={players} columns={columns} />
     </div>
   );
 };

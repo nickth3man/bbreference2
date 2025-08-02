@@ -1,0 +1,75 @@
+/* Base table styling to match Basketball-Reference.com */
+.stats-table {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+/* Header styling */
+.stats-table thead th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+  padding: 4px 8px 2px;
+  border: 1px solid #ccc;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Sortable header indicators */
+.stats-table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.stats-table thead th.sortable:hover {
+  background-color: #e0e0e0;
+}
+
+.stats-table thead th .sort-arrow {
+  margin-left: 4px;
+  color: #666;
+}
+
+/* Row styling - alternating colors */
+.stats-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.stats-table tbody tr:nth-child(even) {
+  background-color: #f0f0f0;
+}
+
+.stats-table tbody tr:hover {
+  background-color: #e6f3ff !important;
+}
+
+/* Cell styling */
+.stats-table td {
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  font-size: 11px;
+}
+
+/* Numeric columns - right aligned */
+.stats-table td.numeric {
+  text-align: right;
+}
+
+/* Text columns - left aligned */
+.stats-table td.text {
+  text-align: left;
+}
+
+/* Links in tables */
+.stats-table a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.stats-table a:hover {
+  text-decoration: underline;
+}

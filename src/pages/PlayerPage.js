@@ -13,7 +13,6 @@ const PlayerPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('perGame'); // 'perGame', 'totals', 'advanced', 'playoffs'
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
   useEffect(() => {
     const fetchPlayerData = async () => {
@@ -165,40 +164,7 @@ const PlayerPage = () => {
     fetchPlayerData();
   }, [id]);
 
-  const requestSort = (key) => {
-    let direction = 'ascending';
-    // If the sort key is already set and direction is ascending, change to descending
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedData = (data, sortConf) => {
-    if (!data || data.length === 0) return [];
-    if (!sortConf.key) return data; // No sorting applied if no key specified
-
-    return [...data].sort((a, b) => {
-      const aValue = a[sortConf.key];
-      const bValue = b[sortConf.key];
-
-      // Handle null/undefined values by placing them at the end for ascending, beginning for descending
-      if (aValue === null || aValue === undefined) return sortConf.direction === 'ascending' ? 1 : -1;
-      if (bValue === null || bValue === undefined) return sortConf.direction === 'ascending' ? -1 : 1;
-
-      // Handle string comparison (for alphabetical sorting)
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortConf.direction === 'ascending'
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      } else {
-        // Handle numeric comparison
-        return sortConf.direction === 'ascending'
-          ? aValue - bValue
-          : bValue - aValue;
-      }
-    });
-  };
+  
 
   const formatHeader = (header) => {
     // Convert snake_case or specific abbreviations to more readable format

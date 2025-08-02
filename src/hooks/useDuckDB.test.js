@@ -1,7 +1,7 @@
 
 // src/hooks/useDuckDB.test.js
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useDuckDB } from './useDuckDB';
 import { query as mockQuery } from '../services/duckdbService';
 
@@ -12,15 +12,12 @@ describe('useDuckDB', () => {
     const mockData = [{ id: 1, name: 'test' }];
     mockQuery.mockResolvedValue(mockData);
 
-    const { result, waitForNextUpdate } = renderHook(() => useDuckDB('SELECT * FROM test'));
+    const { result } = renderHook(() => useDuckDB('SELECT * FROM test'));
 
     expect(result.current.loading).toBe(true);
 
-    await act(async () => {
-      await waitForNextUpdate();
-    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.loading).toBe(false);
     expect(result.current.data).toEqual(mockData);
     expect(result.current.error).toBeNull();
   });
@@ -29,15 +26,12 @@ describe('useDuckDB', () => {
     const mockError = new Error('Test Error');
     mockQuery.mockRejectedValue(mockError);
 
-    const { result, waitForNextUpdate } = renderHook(() => useDuckDB('SELECT * FROM test'));
+    const { result } = renderHook(() => useDuckDB('SELECT * FROM test'));
 
     expect(result.current.loading).toBe(true);
 
-    await act(async () => {
-      await waitForNextUpdate();
-    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.loading).toBe(false);
     expect(result.current.data).toEqual([]);
     expect(result.current.error).toEqual(mockError);
   });
