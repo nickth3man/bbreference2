@@ -21,10 +21,10 @@ const PlayersIndex = () => {
             is_active,
             is_hall_of_famer
           FROM Players
-          WHERE player_name LIKE '%${searchTerm}%' COLLATE NOCASE
+          WHERE player_name LIKE ? COLLATE NOCASE
           ORDER BY player_name ASC
         `;
-        const result = await executeQuery(query);
+        const result = await executeQuery(query, [`%${searchTerm}%`]);
         setPlayers(result);
       } catch (err) {
         console.error("Error fetching players:", err);

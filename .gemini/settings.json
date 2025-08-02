@@ -16,8 +16,7 @@
         "C:\\Users\\nicki\\Documents\\Cline\\MCP\\fetch-mcp\\dist\\index.js"
       ],
       "timeout": 30000,
-      "trust": false,
-      "includeTools": ["fetch_txt"]
+      "trust": false
     },
     "sequentialthinking": {
       "command": "npx",
@@ -38,8 +37,7 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
       },
       "timeout": 30000,
-      "trust": false,
-      "includeTools": ["search_repositories", "search_code"]
+      "trust": false
     },
     "context7": {
       "command": "npx",
@@ -63,8 +61,7 @@
         "BRAVE_API_KEY": "$BRAVE_API_KEY"
       },
       "timeout": 30000,
-      "trust": false,
-      "includeTools": ["brave_web_search"]
+      "trust": false
     },
     "perplexity-mcp": {
       "command": "node",

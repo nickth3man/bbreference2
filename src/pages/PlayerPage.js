@@ -25,18 +25,18 @@ const PlayerPage = () => {
         const playerInfoQuery = `
           SELECT *
           FROM CommonPlayerInfo
-          WHERE player_id = '${id}';
+          WHERE player_id = ?;
         `;
-        const playerInfoResult = await executeQuery(playerInfoQuery);
+        const playerInfoResult = await executeQuery(playerInfoQuery, [id]);
         setPlayerInfo(playerInfoResult.length > 0 ? playerInfoResult[0] : null);
 
         // Fetch Career Stats from PlayerCareerInfo table
         const careerStatsQuery = `
           SELECT *
           FROM PlayerCareerInfo
-          WHERE player_id = '${id}';
+          WHERE player_id = ?;
         `;
-        const careerStatsResult = await executeQuery(careerStatsQuery);
+        const careerStatsResult = await executeQuery(careerStatsQuery, [id]);
         setCareerStats(careerStatsResult.length > 0 ? careerStatsResult[0] : null);
 
         // Fetch Season Stats (Per Game) from PlayerPerGame table
@@ -57,10 +57,10 @@ const PlayerPage = () => {
             blk_per_game AS blk,
             pts_per_game AS pts
           FROM PlayerPerGame
-          WHERE player_id = '${id}' AND tm <> 'TOT'
+          WHERE player_id = ? AND tm <> 'TOT'
           ORDER BY CAST(season AS INT) ASC;
         `;
-        const perGameStatsResult = await executeQuery(perGameStatsQuery);
+        const perGameStatsResult = await executeQuery(perGameStatsQuery, [id]);
         setPerGameStats(perGameStatsResult);
 
         // Fetch Season Stats (Totals) from PlayerTotals table
@@ -88,10 +88,10 @@ const PlayerPage = () => {
             pf_total AS pf,
             pts_total AS pts
           FROM PlayerTotals
-          WHERE player_id = '${id}' AND tm <> 'TOT'
+          WHERE player_id = ? AND tm <> 'TOT'
           ORDER BY CAST(season AS INT) ASC;
         `;
-        const totalStatsResult = await executeQuery(totalStatsQuery);
+        const totalStatsResult = await executeQuery(totalStatsQuery, [id]);
         setTotalStats(totalStatsResult);
 
         // Fetch Season Stats (Advanced) from PlayerAdvanced table
@@ -123,10 +123,10 @@ const PlayerPage = () => {
             bpm,
             vorp
           FROM PlayerAdvanced
-          WHERE player_id = '${id}' AND tm <> 'TOT'
+          WHERE player_id = ? AND tm <> 'TOT'
           ORDER BY CAST(season AS INT) ASC;
         `;
-        const advancedStatsResult = await executeQuery(advancedStatsQuery);
+        const advancedStatsResult = await executeQuery(advancedStatsQuery, [id]);
         setAdvancedStats(advancedStatsResult);
 
         // Fetch Playoff Stats from PlayerPlayoffStats (if file exists) or PlayerPerGame (if playoff data embedded)
@@ -148,10 +148,10 @@ const PlayerPage = () => {
                 blk_per_game AS blk,
                 pts_per_game AS pts
             FROM PlayerPlayoffStats
-            WHERE player_id = '${id}' AND tm <> 'TOT'
+            WHERE player_id = ? AND tm <> 'TOT'
             ORDER BY CAST(season AS INT) ASC;
         `;
-        const playoffStatsResult = await executeQuery(playoffStatsQuery);
+        const playoffStatsResult = await executeQuery(playoffStatsQuery, [id]);
         setPlayoffStats(playoffStatsResult);
 
       } catch (err) {

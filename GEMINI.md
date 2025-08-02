@@ -58,6 +58,7 @@ This project creates a local Basketball Reference stats app that mirrors Basketb
 
 ## Custom Gemini Commands
 Available custom commands for this project:
+- `/session:begin` - Start development session with context analysis and action planning
 - `/date:verify` - Verify and update current date context using web search
 - `/test:gen` - Generate comprehensive test suites for components/services
 - `/code:component` - Create React components with Basketball Reference styling
@@ -101,15 +102,15 @@ Available custom commands for this project:
 - **Checkpointing**: Enabled (allows `/restore` command to undo changes)
 - **Git Integration**: Respects .gitignore for file filtering
 - **Extensions**: Basketball-dev extension loaded with specialized context
-- **Commands**: 9 custom commands for development workflow
+- **Commands**: 10 custom commands for development workflow
 - **MCP Servers**: 7 configured servers for enhanced functionality:
-  - `fetch-mcp`: Web content fetching and text processing
-  - `sequentialthinking`: Advanced reasoning and problem-solving tools
-  - `GitHub`: Repository search and code exploration
-  - `context7`: Library documentation and context resolution
-  - `brave-search`: Web search capabilities
-  - `perplexity-mcp`: AI-powered search and documentation
-  - `deepwiki`: Wikipedia and knowledge base access
+  - `fetch-mcp`: Web content fetching and transformation in various formats (HTML, JSON, plain text, Markdown) from URLs
+  - `sequentialthinking`: Dynamic and reflective problem-solving through structured thinking with step breakdowns and tool recommendations
+  - `GitHub`: AI agent integration with GitHub repositories for management, file operations, and API interactions
+  - `context7`: Up-to-date, version-specific documentation and code examples to prevent outdated or hallucinated code generation
+  - `brave-search`: Brave Search API integration for real-time web and local search with filtering and smart fallbacks
+  - `perplexity-mcp`: Sonar API integration for real-time web-wide research capabilities and up-to-date insights
+  - `deepwiki`: DeepWiki repository documentation access with question answering and wiki structure navigation
 
 ## Project Structure & Conventions
 - Place all React pages in `src/pages/`.
