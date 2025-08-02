@@ -1,0 +1,8 @@
+{
+  "name": "basketball-dev",
+  "version": "1.0.0",
+  "description": "Basketball Reference development extension with specialized tools and context",
+  "mcpServers": {},
+  "contextFileName": "BASKETBALL_DEV.md",
+  "excludeTools": ["run_shell_command(rm)", "run_shell_command(del)"]
+}

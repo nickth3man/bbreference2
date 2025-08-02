@@ -39,7 +39,15 @@ This document outlines the high-level architecture and project structure for the
 *   **Purpose:** Renders the application visually, mirroring Basketball-Reference.com's pages [PRD.md:61-112](PRD.md:61-112). Developed with React, potentially leveraging Webflow-designed structures.
 *   **Key Sub-Modules:**
     *   **Layout & Navigation:** Components forming the application shell, including header, navigation menu (linking to Players, Teams, Seasons, Drafts, Playoffs), and footer.
-    *   **Generic Table Display Components (`StatsTable.js`):** Reusable React components for presenting tabular data with features like sorting, filtering, and potentially pagination/infinite scroll for large datasets.
+    *   **Generic Table Display Components (`StatsTable.js`):** Reusable React components for presenting tabular data with features like sorting, filtering, and potentially pagination/infinite scroll for large datasets. **Must implement Basketball-Reference.com styling:**
+        *   Alternating row colors (white/#f0f0f0 stripes)
+        *   Right-aligned numeric columns with consistent decimal places
+        *   **CRITICAL: All per-game stats must display with exactly 1 decimal place (e.g., 7.0, 12.5, 0.9) - never as whole numbers**
+        *   Sticky headers for long tables
+        *   Sortable columns with clear visual indicators (arrows)
+        *   Row hover effects for better UX
+        *   Responsive design that maintains readability on mobile
+        *   Export to CSV functionality
     *   **Page-Specific Components:** Dedicated components for rendering detailed content of BRef-mirroring pages:
         *   `PlayersIndex.js`: Lists all players with search/filter capabilities.
         *   `PlayerDetail.js`: Displays a specific player's career and season stats, bio, etc.

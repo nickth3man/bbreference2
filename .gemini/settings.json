@@ -1,0 +1,87 @@
+{
+  "theme": "GitHub",
+  "autoAccept": false,
+  "sandbox": false,
+  "checkpointing": {
+    "enabled": true
+  },
+  "fileFiltering": {
+    "respectGitIgnore": false
+  },
+  "usageStatisticsEnabled": true,
+  "mcpServers": {
+    "fetch-mcp": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\nicki\\Documents\\Cline\\MCP\\fetch-mcp\\dist\\index.js"
+      ],
+      "timeout": 30000,
+      "trust": false,
+      "includeTools": ["fetch_txt"]
+    },
+    "sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-sequentialthinking-tools"
+      ],
+      "timeout": 30000,
+      "trust": true
+    },
+    "GitHub": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_PERSONAL_ACCESS_TOKEN"
+      },
+      "timeout": 30000,
+      "trust": false,
+      "includeTools": ["search_repositories", "search_code"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": "10000"
+      },
+      "timeout": 30000,
+      "trust": true
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "$BRAVE_API_KEY"
+      },
+      "timeout": 30000,
+      "trust": false,
+      "includeTools": ["brave_web_search"]
+    },
+    "perplexity-mcp": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\nicki\\Documents\\Cline\\MCP\\perplexity-mcp\\build\\index.js"
+      ],
+      "env": {
+        "PERPLEXITY_API_KEY": "$PERPLEXITY_API_KEY"
+      },
+      "timeout": 30000,
+      "trust": true
+    },
+    "deepwiki": {
+      "url": "https://mcp.deepwiki.com/sse",
+      "timeout": 30000,
+      "trust": true
+    }
+  },
+  "excludeTools": []
+}

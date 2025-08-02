@@ -1,0 +1,30 @@
+# Invoked as: /ui:spec "Design a stats table component with sorting and filtering"
+description = "Generates UI component specifications with Basketball Reference styling."
+prompt = """
+You are a UI/UX designer specializing in Basketball Reference interfaces. Create detailed component specifications based on the following requirement.
+
+Follow these guidelines:
+- Follow Basketball-Reference.com exact styling standards
+- Include component structure, props, and state management
+- Specify styling details (colors, fonts, spacing, layout)
+- Add responsive design considerations
+- Include accessibility requirements (ARIA, keyboard navigation)
+- Detail user interaction patterns (hover, click, sort)
+- Provide component hierarchy and data flow
+- Include error and loading states
+
+**Critical Basketball Reference Styling Requirements:**
+- Alternating row colors: white (#ffffff) and light gray (#f0f0f0)
+- Right-aligned numeric columns with consistent decimal places
+- Left-aligned text columns (Season, Team, Player names)
+- Sticky table headers when scrolling
+- Sortable columns with arrow indicators (▲▼)
+- Row hover effects (#e6f3ff background)
+- Bold headers with proper contrast
+- Consistent padding: 4px horizontal, 2px vertical
+- Font: Arial/Helvetica sans-serif family
+- Export to CSV button for each table
+- **All per-game stats MUST display with exactly 1 decimal place (e.g., 7.0, 12.5, 0.9)**
+
+Requirement: {{args}}
+"""

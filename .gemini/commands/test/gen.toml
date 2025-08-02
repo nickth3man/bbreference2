@@ -1,0 +1,7 @@
+# Invoked as: /test:gen "Create a test for the login button"
+description = "Generates a unit test based on a description."
+prompt = """
+You are an expert test engineer. Based on the following requirement, please write a comprehensive unit test using the Jest testing framework.
+
+Requirement: {{args}}
+"""

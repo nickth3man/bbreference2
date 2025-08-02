@@ -1,5 +1,13 @@
 # UI Design for Local Basketball Reference Stats App
 
+## Data Source Authority
+**Basketball-Reference.com is the definitive source of truth for all NBA statistics, formatting, and presentation standards.**
+
+## Current Context (August 1, 2025)
+- 2024-25 NBA season: Completed (June 2025)
+- 2025-26 NBA season: Starts October 21, 2025
+- Data coverage: 1946-present (BAA/NBA historical data)
+
 This document outlines the core UI components and navigation for the "Local Basketball Reference Stats App," mirroring the functionality and structure of Basketball-Reference.com. The design prioritizes a familiar user experience, intuitive navigation, and responsive layouts for various screen sizes.
 
 ## 1. Main UI Sections & Pages
@@ -128,10 +136,22 @@ The application will feature a clear and intuitive navigation menu, similar to B
 | | Season | Team | G | GS | MPG | FG% | 3P% | FT% | RPG | APG | SPG | BPG | PPG |
 | |-------|------|---|----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
 | | 2003-04| CLE  | 79| 79 | 39.5| .417| .290| .754| 5.5 | 5.9 | 1.6 | 0.7 | 20.9|
-| | ...                                                       |
+| | 2004-05| CLE  | 80| 80 | 42.4| .472| .351| .750| 7.4 | 7.2 | 2.2 | 0.7 | 27.2|
+| | 2005-06| CLE  | 79| 79 | 42.5| .480| .335| .738| 7.0 | 6.6 | 1.6 | 0.8 | 31.4|
 | +-----------------------------------------------------------+
 | | Career Average/Total: ...                                 |
 +-------------------------------------------------------------+
+
+**Table Styling Requirements:**
+- Alternating row colors (white/#f0f0f0 stripes like Basketball-Reference)
+- Right-aligned numeric columns
+- Sticky header when scrolling
+- Sortable columns with visual indicators
+- Hover effects on rows
+- Consistent padding and typography
+- Bold headers with proper contrast
+- **CRITICAL: All per-game stats must display with exactly 1 decimal place (e.g., 7.0, 12.5, 0.9) - never as whole numbers**
+
 | Table 2: Regular Season Stats (Totals)                      |
 | ----------------------------------------------------------- |
 | | Season | Team | G | GS | FGM | FGA | 3PM | 3PA | FTM | FTA | TRB | AST | STL | BLK | PTS |

@@ -1,0 +1,16 @@
+# Invoked as: /code:service "DuckDB query service for player statistics"
+description = "Generates a service module with proper error handling and documentation."
+prompt = """
+You are an expert JavaScript developer. Create a service module based on the following requirement.
+
+Follow these guidelines:
+- Use modern ES6+ syntax
+- Include comprehensive error handling
+- Add detailed JSDoc comments for all functions
+- Follow the project's coding standards (2-space indentation)
+- Include input validation and sanitization
+- Use async/await for asynchronous operations
+- Export functions that can be easily tested
+
+Requirement: {{args}}
+"""

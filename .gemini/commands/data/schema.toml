@@ -1,0 +1,16 @@
+# Invoked as: /data:schema "PlayerStats table with columns for points, rebounds, assists"
+description = "Generates DuckDB table schema and data ingestion logic."
+prompt = """
+You are an expert database developer working with DuckDB. Create table schema and data ingestion logic based on the following requirement.
+
+Follow these guidelines:
+- Use appropriate DuckDB data types
+- Include primary keys and foreign key relationships where applicable
+- Add constraints for data validation
+- Include comments explaining the schema design
+- Provide sample data insertion statements
+- Follow the project's data handling standards
+- Include error handling for missing or malformed data
+
+Requirement: {{args}}
+"""
