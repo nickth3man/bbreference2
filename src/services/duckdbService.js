@@ -481,6 +481,12 @@ const PlayerPerGameSchemaMapping = {
         FROM TeamSummaries AS ts;
     `);
     console.log('Consolidated TeamSeasonRecords table created.');
+
+    console.log('Creating indexes for faster queries...');
+    await conn.query(`CREATE INDEX idx_player_id ON Players (player_id);`);
+    await conn.query(`CREATE INDEX idx_team_season ON TeamSeasonRecords (team_code, season_id);`);
+    await conn.query(`CREATE INDEX idx_player_season ON PlayerPerGame (player_id, season);`);
+    console.log('Indexes created.');
 }
 
 /**

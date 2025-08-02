@@ -5,68 +5,32 @@
  * while managing loading states, errors, and caching.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { duckdbService } from '../services/duckdbService';
+import { useState, useEffect } from 'react';
+import { query } from '../services/duckdbService';
 
-/**
- * Hook for executing DuckDB queries with state management
- * @param {string} initialQuery - Initial SQL query to execute
- * @param {Object} initialParams - Initial query parameters
- * @param {boolean} executeOnMount - Whether to execute query on component mount
- * @returns {Object} Query state and execution function
- */
-export function useDuckDB(initialQuery = null, initialParams = {}, executeOnMount = true) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
+export const useDuckDB = (sql) => {
+  const [data, setData] = useState([]);
   const [error, setError] = useState(null);
-  const [query, setQuery] = useState(initialQuery);
-  const [params, setParams] = useState(initialParams);
-
-  const executeQuery = useCallback(async (sqlQuery = query, queryParams = params) => {
-    if (!sqlQuery) {
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await duckdbService.executeQuery(sqlQuery, queryParams);
-      setData(result);
-    } catch (err) {
-      setError(err.message || 'An error occurred while executing the query');
-      console.error('DuckDB query error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, params]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (executeOnMount && query) {
-      executeQuery();
-    }
-  }, [executeOnMount, query, executeQuery]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await query(sql);
+        setData(result);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const refetch = useCallback(() => {
-    executeQuery();
-  }, [executeQuery]);
+    fetchData();
+  }, [sql]);
 
-  const updateQuery = useCallback((newQuery, newParams = {}) => {
-    setQuery(newQuery);
-    setParams(newParams);
-  }, []);
-
-  return {
-    data,
-    loading,
-    error,
-    executeQuery,
-    refetch,
-    updateQuery,
-    query,
-    params
-  };
-}
+  return { data, error, loading };
+};
 
 /**
  * Hook for fetching player statistics
