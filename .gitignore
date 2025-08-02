@@ -1,3 +1,4 @@
 .roomodes
 .roo/rules/Custom_Instructions_for_All_Modes.md
 csv/play_by_play.csv
+node_modules

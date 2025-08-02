@@ -5,12 +5,15 @@ import { executeQuery } from '../services/duckdbService';
 const PlayerPage = () => {
   const { id } = useParams();
   const [playerInfo, setPlayerInfo] = useState(null);
-  const [careerStats, setCareerStats] = useState([]);
-  const [seasonStats, setSeasonStats] = useState([]);
+  const [careerStats, setCareerStats] = useState(null);
+  const [perGameStats, setPerGameStats] = useState([]);
+  const [totalStats, setTotalStats] = useState([]);
+  const [advancedStats, setAdvancedStats] = useState([]);
   const [playoffStats, setPlayoffStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('perGame'); // 'perGame', 'totals', 'advanced', 'playoffs'
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
   useEffect(() => {
     const fetchPlayerData = async () => {
@@ -18,63 +21,138 @@ const PlayerPage = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch Player Info from common_player_info.csv
+        // Fetch Player Info from CommonPlayerInfo table
         const playerInfoQuery = `
           SELECT *
-          FROM "common_player_info.csv"
-          WHERE "player_id" = '${id}'
+          FROM CommonPlayerInfo
+          WHERE player_id = '${id}';
         `;
         const playerInfoResult = await executeQuery(playerInfoQuery);
         setPlayerInfo(playerInfoResult.length > 0 ? playerInfoResult[0] : null);
 
-        // Fetch Career Stats (Player Career Info.csv)
+        // Fetch Career Stats from PlayerCareerInfo table
         const careerStatsQuery = `
           SELECT *
-          FROM "Player Career Info.csv"
-          WHERE "player_id" = '${id}'
+          FROM PlayerCareerInfo
+          WHERE player_id = '${id}';
         `;
         const careerStatsResult = await executeQuery(careerStatsQuery);
-        setCareerStats(careerStatsResult);
+        setCareerStats(careerStatsResult.length > 0 ? careerStatsResult[0] : null);
 
-        // Fetch Season Stats (Player Per Game.csv, Player Totals.csv, Advanced.csv, Per 36 Minutes.csv, Per 100 Poss.csv, Player Shooting.csv, Player Play By Play.csv)
-        // For simplicity, we'll start with Per Game and add more later or combine
-        const seasonStatsQuery = `
-          SELECT *
-          FROM "Player Per Game.csv"
-          WHERE "player_id" = '${id}'
-          ORDER BY "Season" ASC
+        // Fetch Season Stats (Per Game) from PlayerPerGame table
+        const perGameStatsQuery = `
+          SELECT
+            season,
+            lg,
+            tm,
+            g,
+            gs,
+            mp_per_game AS mp,
+            fg_percent AS "fg_pct",
+            x3p_percent AS "3p_pct",
+            ft_percent AS "ft_pct",
+            trb_per_game AS trb,
+            ast_per_game AS ast,
+            stl_per_game AS stl,
+            blk_per_game AS blk,
+            pts_per_game AS pts
+          FROM PlayerPerGame
+          WHERE player_id = '${id}' AND tm <> 'TOT'
+          ORDER BY CAST(season AS INT) ASC;
         `;
-        const seasonStatsResult = await executeQuery(seasonStatsQuery);
-        setSeasonStats(seasonStatsResult);
+        const perGameStatsResult = await executeQuery(perGameStatsQuery);
+        setPerGameStats(perGameStatsResult);
 
-        // Fetch Playoff Stats (Currently assuming a 'Player Playoff.csv' or similar is available)
-        // If not, this query will need to be adjusted based on actual data sources for playoff data.
+        // Fetch Season Stats (Totals) from PlayerTotals table
+        const totalStatsQuery = `
+          SELECT
+            season,
+            lg,
+            tm,
+            g,
+            gs,
+            mp_total AS mp,
+            fg_total AS fg,
+            fga_total AS fga,
+            x3p_total AS "3p",
+            x3pa_total AS "3pa",
+            ft_total AS ft,
+            fta_total AS fta,
+            orb_total AS orb,
+            drb_total AS drb,
+            trb_total AS trb,
+            ast_total AS ast,
+            stl_total AS stl,
+            blk_total AS blk,
+            tov_total AS tov,
+            pf_total AS pf,
+            pts_total AS pts
+          FROM PlayerTotals
+          WHERE player_id = '${id}' AND tm <> 'TOT'
+          ORDER BY CAST(season AS INT) ASC;
+        `;
+        const totalStatsResult = await executeQuery(totalStatsQuery);
+        setTotalStats(totalStatsResult);
+
+        // Fetch Season Stats (Advanced) from PlayerAdvanced table
+        const advancedStatsQuery = `
+          SELECT
+            season,
+            lg,
+            tm,
+            g,
+            mp AS mp_advanced,
+            per,
+            ts_percent AS ts_pct,
+            x3p_ar AS "3p_ar",
+            ft_ar AS "ft_ar",
+            orb_percent AS orb_pct,
+            drb_percent AS drb_pct,
+            trb_percent AS trb_pct,
+            ast_percent AS ast_pct,
+            stl_percent AS stl_pct,
+            blk_percent AS blk_pct,
+            tov_percent AS tov_pct,
+            usg_percent AS usg_pct,
+            ows,
+            dws,
+            ws,
+            ws_48 AS ws_per_48,
+            obpm,
+            dbpm,
+            bpm,
+            vorp
+          FROM PlayerAdvanced
+          WHERE player_id = '${id}' AND tm <> 'TOT'
+          ORDER BY CAST(season AS INT) ASC;
+        `;
+        const advancedStatsResult = await executeQuery(advancedStatsQuery);
+        setAdvancedStats(advancedStatsResult);
+
+        // Fetch Playoff Stats from PlayerPlayoffStats (if file exists) or PlayerPerGame (if playoff data embedded)
+        // For now, assume PlayerPlayoffStats will contain playoff data if available.
         const playoffStatsQuery = `
-          SELECT *
-          FROM "Player Playoff.csv"
-          WHERE "player_id" = '${id}'
-          ORDER BY "Season" ASC
+            SELECT
+                season,
+                lg,
+                tm,
+                g,
+                gs,
+                mp_per_game AS mp,
+                fg_percent AS "fg_pct",
+                x3p_percent AS "3p_pct",
+                ft_percent AS "ft_pct",
+                trb_per_game AS trb,
+                ast_per_game AS ast,
+                stl_per_game AS stl,
+                blk_per_game AS blk,
+                pts_per_game AS pts
+            FROM PlayerPlayoffStats
+            WHERE player_id = '${id}' AND tm <> 'TOT'
+            ORDER BY CAST(season AS INT) ASC;
         `;
-
-        // The above query assumes a file named "Player Playoff.csv".
-        // Based on architecture.md, Player Playoff Stats are assumed from BRef structure.
-        // For now, if "Player Playoff.csv" does not exist, consider joining with existing "Player Per Game.csv"
-        // filtering for rows where "playoffs" column is true (if such column exists and indicates playoff stats).
-        // Or, if "PlayoffStats.csv" is implemented, use that.
-        // For this initial implementation, we'll use a placeholder or assume a similar structure to Player Per Game.
-        // As per architecture.md, PlayoffStats CSV is "Assumed from BRef structure; not explicitly listed in current `csv/` contents, but will align if available"
-        // For now, let's make a generic query that would work if "Player Playoff.csv" existed, and document the need for actual playoff data.
-        const actualPlayoffStatsQuery = `
-          SELECT *
-          FROM "Player Per Game.csv"  --Placeholder: Use actual playoff CSV when available
-          WHERE "player_id" = '${id}' AND "Lg" = 'NBA' AND "Tm" LIKE '%(playoffs)%' -- Example condition if included in Player Per Game
-          ORDER BY "Season" ASC
-        `;
-        // Above "Tm" LIKE '%(playoffs)%' is a hypothetical way BRef may represent playoff rows in a combined CSV.
-        // This needs actual data shape confirmation. For now, it's a pointer.
-        const playoffStatsResult = await executeQuery(actualPlayoffStatsQuery);
+        const playoffStatsResult = await executeQuery(playoffStatsQuery);
         setPlayoffStats(playoffStatsResult);
-
 
       } catch (err) {
         console.error("Error fetching player data:", err);
@@ -87,32 +165,140 @@ const PlayerPage = () => {
     fetchPlayerData();
   }, [id]);
 
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    // If the sort key is already set and direction is ascending, change to descending
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedData = (data, sortConf) => {
+    if (!data || data.length === 0) return [];
+    if (!sortConf.key) return data; // No sorting applied if no key specified
+
+    return [...data].sort((a, b) => {
+      const aValue = a[sortConf.key];
+      const bValue = b[sortConf.key];
+
+      // Handle null/undefined values by placing them at the end for ascending, beginning for descending
+      if (aValue === null || aValue === undefined) return sortConf.direction === 'ascending' ? 1 : -1;
+      if (bValue === null || bValue === undefined) return sortConf.direction === 'ascending' ? -1 : 1;
+
+      // Handle string comparison (for alphabetical sorting)
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConf.direction === 'ascending'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      } else {
+        // Handle numeric comparison
+        return sortConf.direction === 'ascending'
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+    });
+  };
+
+  const formatHeader = (header) => {
+    // Convert snake_case or specific abbreviations to more readable format
+    switch (header) {
+      case 'mp_per_game': return 'MPG';
+      case 'fg_pct': return 'FG%';
+      case '3p_pct': return '3P%';
+      case 'ft_pct': return 'FT%';
+      case 'trb_per_game': return 'TRB';
+      case 'ast_per_game': return 'AST';
+      case 'stl_per_game': return 'STL';
+      case 'blk_per_game': return 'BLK';
+      case 'pts_per_game': return 'PTS';
+      case 'mp_total': return 'MP';
+      case 'fg_total': return 'FG';
+      case 'fga_total': return 'FGA';
+      case '3p_total': return '3P';
+      case '3pa_total': return '3PA';
+      case 'ft_total': return 'FT';
+      case 'fta_total': return 'FTA';
+      case 'orb_total': return 'ORB';
+      case 'drb_total': return 'DRB';
+      case 'tov_total': return 'TOV';
+      case 'pf_total': return 'PF';
+      case 'pts_total': return 'PTS';
+      case 'mp_advanced': return 'MP';
+      case 'ts_pct': return 'TS%';
+      case '3p_ar': return '3PAr';
+      case 'ft_ar': return 'FTr';
+      case 'orb_pct': return 'ORB%';
+      case 'drb_pct': return 'DRB%';
+      case 'trb_pct': return 'TRB%';
+      case 'ast_pct': return 'AST%';
+      case 'stl_pct': return 'STL%';
+      case 'blk_pct': return 'BLK%';
+      case 'tov_pct': return 'TOV%';
+      case 'usg_pct': return 'USG%';
+      case 'ws_per_48': return 'WS/48';
+      case 'ows': return 'OWS';
+      case 'dws': return 'DWS';
+      case 'ws': return 'WS';
+      case 'obpm': return 'OBPM';
+      case 'dbpm': return 'DBPM';
+      case 'bpm': return 'BPM';
+      case 'vorp': return 'VORP';
+      case 'g': return 'G';
+      case 'gs': return 'GS';
+      case 'season': return 'Season';
+      case 'lg': return 'Lg';
+      case 'tm': return 'Tm';
+      case 'per': return 'PER';
+      case 'pos': return 'Pos';
+      default: return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+  };
+
+  const formatValue = (key, value) => {
+    // Format percentages and other float values to 3 decimal places or 1 for per-game stats
+    const threeDecimalKeys = ['fg_pct', '3p_pct', 'ft_pct', 'e_fg_percent', 'ts_pct', '3p_ar', 'ft_ar', 'orb_pct', 'drb_pct', 'trb_pct', 'ast_pct', 'stl_pct', 'blk_pct', 'tov_pct', 'usg_pct', 'ws_per_48', 'per', 'bpm', 'obpm', 'dbpm', 'vorp', 'pace', 'srs', 'o_rtg', 'd_rtg', 'n_rtg', 'mov'];
+    const oneDecimalKeys = ['pts', 'trb', 'ast', 'stl', 'blk', 'mp', 'fg', 'fga', '3p', '3pa', 'ft', 'fta', 'orb', 'drb', 'tov', 'pf'];
+
+    if (typeof value === 'number') {
+      if (threeDecimalKeys.includes(key)) {
+        return value.toFixed(3);
+      }
+      if (oneDecimalKeys.includes(key)) {
+        return value.toFixed(1);
+      }
+      return value;
+    }
+    return value;
+  };
+
+
   const renderPlayerInfo = () => {
     if (!playerInfo) return <p>Player information not found.</p>;
     return (
-      <div>
-        <h2>{playerInfo.Player}</h2>
-        <p>Position: {playerInfo.Pos || 'N/A'}</p>
-        <p>Height: {playerInfo.Ht || 'N/A'}</p>
-        <p>Weight: {playerInfo.Wt || 'N/A'}</p>
-        <p>Born: {playerInfo["Date of Birth"] || 'N/A'}</p>
-        <p>College: {playerInfo.College || 'N/A'}</p>
-        <p>Draft: {playerInfo.Draft || 'N/A'}</p>
+      <div style={{ marginBottom: '20px' }}>
+        <h2>{playerInfo.full_name}</h2>
+        <p>Position: {playerInfo.Pos || 'N/A'} | Height: {playerInfo.Ht || 'N/A'} | Weight: {playerInfo.Wt || 'N/A'}</p>
+        <p>Born: {playerInfo["Date of Birth"] || 'N/A'} | College: {playerInfo.College || 'N/A'} | Draft: {playerInfo.Draft || 'N/A'}</p>
       </div>
     );
   };
 
   const renderCareerSummary = () => {
-    if (careerStats.length === 0) return null;
-    const career = careerStats[0]; // Assuming one career summary row for the player
+    if (!careerStats) return <p>Career summary not available.</p>;
+    // Ensure all stats exist before displaying
+    const hasStats = careerStats.G || careerStats.PTS || careerStats.TRB || careerStats.AST;
+    if (!hasStats) return <p>Career summary incomplete.</p>;
+
     return (
-      <div>
+      <div style={{ marginBottom: '20px' }}>
         <h3>Career Summary</h3>
-        <p>Seasons: {career["Yrs"]}</p>
-        <p>Games: {career["G"]}</p>
-        <p>Points Per Game: {career["PTS/G"]}</p>
-        <p>Rebounds Per Game: {career["TRB/G"]}</p>
-        <p>Assists Per Game: {career["AST/G"]}</p>
+        <p>Seasons: {careerStats.Yrs || 'N/A'}</p>
+        <p>Games: {careerStats.G || 'N/A'}</p>
+        <p>Total Points: {careerStats.PTS ? careerStats.PTS.toLocaleString() : 'N/A'}</p> {/* Use toLocaleString for large numbers */}
+        <p>Total Rebounds: {careerStats.TRB ? careerStats.TRB.toLocaleString() : 'N/A'}</p>
+        <p>Total Assists: {careerStats.AST ? careerStats.AST.toLocaleString() : 'N/A'}</p>
+        <p>Win Shares: {careerStats.WS ? careerStats.WS.toFixed(1) : 'N/A'}</p>
       </div>
     );
   };
@@ -120,28 +306,59 @@ const PlayerPage = () => {
   const renderStatsTable = (data, title) => {
     if (!data || data.length === 0) return <h3>{title} Stats Not Available</h3>;
 
-    // Extract headers dynamically from the first object, excluding player_id
-    const headers = Object.keys(data[0]).filter(key => key !== 'player_id');
+    // Filter out internal/redundant keys and order them logically for display
+    const excludedKeys = ['player_id', 'seas_id', 'birth_year', 'experience', 'column0', 'column1', '__mopp__', 'player_name', 'player']; // 'player_name' already used for link
+    let headers = Object.keys(data[0]).filter(key => !excludedKeys.includes(key.toLowerCase()));
+
+    // Prioritize key stats for order, then sort remaining alphabetically
+    const preferredOrderMap = {
+      'season': 1, 'sm': 2, 'lg': 3, 'tm': 4, 'pos': 5, 'age': 6,
+      'g': 7, 'gs': 8, 'mp': 9, 'fg': 10, 'fga': 11, 'fg_pct': 12, '3p': 13, '3pa': 14, '3p_pct': 15,
+      '2p': 16, '2pa': 17, '2p_pct': 18, 'e_fg_percent': 19, 'ft': 20, 'fta': 21, 'ft_pct': 22,
+      'orb': 23, 'drb': 24, 'trb': 25, 'ast': 26, 'stl': 27, 'blk': 28, 'tov': 29, 'pf': 30, 'pts': 31,
+      // For Advanced stats
+      'per': 32, 'ts_pct': 33, '3p_ar': 34, 'ft_ar': 35, 'orb_pct': 36, 'drb_pct': 37, 'trb_pct': 38,
+      'ast_pct': 39, 'stl_pct': 40, 'blk_pct': 41, 'tov_pct': 42, 'usg_pct': 43, 'ows': 44, 'dws': 45,
+      'ws': 46, 'ws_per_48': 47, 'obpm': 48, 'dbpm': 49, 'bpm': 50, 'vorp': 51
+    };
+
+    headers.sort((a, b) => {
+      const orderA = preferredOrderMap[a.toLowerCase()] || 1000; // Put unlisted at end
+      const orderB = preferredOrderMap[b.toLowerCase()] || 1000;
+      if (orderA === orderB) {
+        return a.localeCompare(b);
+      }
+      return orderA - orderB;
+    });
+
+    const currentSortedData = sortedData(data, sortConfig);
 
     return (
-      <div>
+      <div style={{ marginBottom: '20px' }}>
         <h3>{title}</h3>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
                 {headers.map((header) => (
-                  <th key={header} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{header}</th>
+                  <th
+                    key={header}
+                    style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                    onClick={() => requestSort(header)}
+                  >
+                    {formatHeader(header)}{sortConfig.key === header ? (sortConfig.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {data.map((row, index) => (
+              {currentSortedData.map((row, index) => (
                 <tr key={index}>
                   {headers.map((header) => (
                     <td key={header} style={{ border: '1px solid #ddd', padding: '8px' }}>
-                      {header === 'Tm' ? <Link to={`/teams/${row['team_code']}/${row['Season']}`}>{row[header]}</Link> : row[header]}
-                      {/* Assuming team_code exists for linking team season pages */}
+                      {header === 'season' && row.tm
+                        ? <Link to={`/teams/${row.tm}/${row.season}`}>{row[header]}</Link>
+                        : formatValue(header, row[header])}
                     </td>
                   ))}
                 </tr>
@@ -153,6 +370,7 @@ const PlayerPage = () => {
     );
   };
 
+
   if (loading) return <div>Loading player data...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!playerInfo) return <div>Player not found.</div>;
@@ -161,21 +379,19 @@ const PlayerPage = () => {
     <div>
       <h1>Player Profile</h1>
       {renderPlayerInfo()}
-      {renderCareerSummary()}
+      {careerStats ? renderCareerSummary() : <p>Career summary not available.</p>}
 
-      <div>
-        <button onClick={() => setActiveTab('perGame')}>Per Game</button>
-        <button onClick={() => setActiveTab('totals')}>Totals</button>
-        <button onClick={() => setActiveTab('advanced')}>Advanced</button>
-        <button onClick={() => setActiveTab('playoffs')}>Playoffs</button>
+      <div style={{ marginBottom: '10px' }}>
+        <button onClick={() => { setActiveTab('perGame'); setSortConfig({ key: null, direction: 'ascending' }); }} style={{ marginRight: '5px' }}>Per Game</button>
+        <button onClick={() => { setActiveTab('totals'); setSortConfig({ key: null, direction: 'ascending' }); }} style={{ marginRight: '5px' }}>Totals</button>
+        <button onClick={() => { setActiveTab('advanced'); setSortConfig({ key: null, direction: 'ascending' }); }} style={{ marginRight: '5px' }}>Advanced</button>
+        <button onClick={() => { setActiveTab('playoffs'); setSortConfig({ key: null, direction: 'ascending' }); }} style={{ marginRight: '5px' }}>Playoffs</button>
       </div>
 
-      {activeTab === 'perGame' && renderStatsTable(seasonStats, 'Regular Season Stats (Per Game)')}
-      {/* Todo: Implement Totals and Advanced tabs with corresponding data queries and rendering */}
+      {activeTab === 'perGame' && renderStatsTable(perGameStats, 'Regular Season Stats (Per Game)')}
+      {activeTab === 'totals' && renderStatsTable(totalStats, 'Regular Season Stats (Totals)')}
+      {activeTab === 'advanced' && renderStatsTable(advancedStats, 'Regular Season Stats (Advanced)')}
       {activeTab === 'playoffs' && renderStatsTable(playoffStats, 'Playoff Stats')}
-      {/* For 'totals' and 'advanced' tabs, you would fetch data from Player Totals.csv and Advanced.csv respectively. */}
-      {/* This requires additional queries and state variables similar to seasonStats and playoffStats. */}
-      {/* For now, leaving comments as placeholders. */}
     </div>
   );
 };

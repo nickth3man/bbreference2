@@ -8,6 +8,42 @@ const SeasonPage = () => {
   const [leagueLeaders, setLeagueLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortConfigStandings, setSortConfigStandings] = useState({ key: null, direction: 'ascending' });
+  const [sortConfigLeaders, setSortConfigLeaders] = useState({ key: null, direction: 'ascending' });
+
+  // Re-usable helper functions for formatting headers and values
+  const formatHeader = (header) => {
+    switch (header) {
+      case 'team_code': return 'Tm';
+      case 'team_name': return 'Team';
+      case 'season_id': return 'Season';
+      case 'wins': return 'W';
+      case 'losses': return 'L';
+      case 'win_loss_percentage': return 'W/L%';
+      case 'playoff_status': return 'Playoffs';
+      case 'player_name': return 'Player';
+      case 'points_per_game': return 'PTS';
+      case 'rebounds_per_game': return 'TRB';
+      case 'assists_per_game': return 'AST';
+      default: return header.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+  };
+
+  const formatValue = (key, value) => {
+    const percentageKeys = ['win_loss_percentage'];
+    const oneDecimalKeys = ['points_per_game', 'rebounds_per_game', 'assists_per_game'];
+
+    if (typeof value === 'number') {
+      if (percentageKeys.includes(key)) {
+        return value.toFixed(3);
+      }
+      if (oneDecimalKeys.includes(key)) {
+        return value.toFixed(1);
+      }
+      return value;
+    }
+    return value;
+  };
 
   useEffect(() => {
     const fetchSeasonData = async () => {
@@ -15,34 +51,34 @@ const SeasonPage = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch standings from Team Summaries.csv
+        // Fetch standings from TeamSeasonRecords table
         const standingsQuery = `
           SELECT
-            "Team Code",
-            "Team",
-            "W",
-            "L",
-            "W/L%"
-          FROM "Team Summaries.csv"
-          WHERE "Season" = '${year}'
-          ORDER BY "W" DESC;
+            team_code,
+            team_name,
+            wins,
+            losses,
+            win_loss_percentage,
+            playoff_status
+          FROM TeamSeasonRecords
+          WHERE season_id = '${year}'
+          ORDER BY wins DESC;
         `;
         const standingsResult = await executeQuery(standingsQuery);
         setStandings(standingsResult);
 
-        // Fetch league leaders from Player Per Game.csv (top scorers for example)
-        // This will need to be expanded for various categories as per design.md (e.g., rebounds, assists)
+        // Fetch league leaders from PlayerPerGame table, joined with Players
         const leadersQuery = `
           SELECT
-            "Player Directory.csv"."Player" AS player_name,
-            "Player Per Game.csv"."player_id",
-            "Player Per Game.csv"."PTS" AS points_per_game,
-            "Player Per Game.csv"."TRB" AS rebounds_per_game,
-            "Player Per Game.csv"."AST" AS assists_per_game
-          FROM "Player Per Game.csv"
-          JOIN "Player Directory.csv" ON "Player Per Game.csv"."player_id" = "Player Directory.csv"."player_id"
-          WHERE "Player Per Game.csv"."Season" = '${year}' AND "Player Per Game.csv"."Lg" = 'NBA'
-          ORDER BY "Player Per Game.csv"."PTS" DESC
+            ppg.player_id,
+            p.player_name,
+            ppg.pts_per_game AS points_per_game,
+            ppg.trb_per_game AS rebounds_per_game,
+            ppg.ast_per_game AS assists_per_game
+          FROM PlayerPerGame AS ppg
+          JOIN Players AS p ON ppg.player_id = p.player_id
+          WHERE ppg.season = '${year}' AND ppg.lg = 'NBA' AND ppg.tm <> 'TOT'
+          ORDER BY ppg.pts_per_game DESC
           LIMIT 10;
         `;
         const leadersResult = await executeQuery(leadersQuery);
@@ -59,6 +95,44 @@ const SeasonPage = () => {
     fetchSeasonData();
   }, [year]);
 
+  const requestSort = (key, type) => {
+    let direction = 'ascending';
+    if (type === 'standings') {
+      if (sortConfigStandings.key === key && sortConfigStandings.direction === 'ascending') {
+        direction = 'descending';
+      }
+      setSortConfigStandings({ key, direction });
+    } else if (type === 'leaders') {
+      if (sortConfigLeaders.key === key && sortConfigLeaders.direction === 'ascending') {
+        direction = 'descending';
+      }
+      setSortConfigLeaders({ key, direction });
+    }
+  };
+
+  const sortedData = (data, sortConf) => {
+    if (!data || data.length === 0) return [];
+    if (!sortConf.key) return data;
+
+    return [...data].sort((a, b) => {
+      const aValue = a[sortConf.key];
+      const bValue = b[sortConf.key];
+
+      if (aValue === null || aValue === undefined) return sortConf.direction === 'ascending' ? 1 : -1;
+      if (bValue === null || bValue === undefined) return sortConf.direction === 'ascending' ? -1 : 1;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConf.direction === 'ascending'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      } else {
+        return sortConf.direction === 'ascending'
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+    });
+  };
+
   if (loading) return <div>Loading season data...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -66,63 +140,109 @@ const SeasonPage = () => {
     <div>
       <h1>{year} NBA Season Summary</h1>
 
-      <h2>Standings</h2>
+      <h2 style={{marginTop: '20px'}}>Standings</h2>
       {standings.length > 0 ? (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Team</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Wins</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Losses</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Win %</th>
-            </tr>
-          </thead>
-          <tbody>
-            {standings.map((team, index) => (
-              <tr key={index}>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                  <Link to={`/teams/${team["Team Code"]}/${year}`}>{team.Team}</Link>
-                </td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{team.W}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{team.L}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{team["W/L%"]}</td>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+            <thead>
+              <tr>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('team_name', 'standings')}
+                >
+                  {formatHeader('team_name')} {sortConfigStandings.key === 'team_name' ? (sortConfigStandings.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('wins', 'standings')}
+                >
+                  {formatHeader('wins')} {sortConfigStandings.key === 'wins' ? (sortConfigStandings.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('losses', 'standings')}
+                >
+                  {formatHeader('losses')} {sortConfigStandings.key === 'losses' ? (sortConfigStandings.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('win_loss_percentage', 'standings')}
+                >
+                  {formatHeader('win_loss_percentage')} {sortConfigStandings.key === 'win_loss_percentage' ? (sortConfigStandings.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{formatHeader('playoff_status')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sortedData(standings, sortConfigStandings).map((team, index) => (
+                <tr key={team.team_code}>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                    <Link to={`/teams/${team.team_code}/${year}`}>{team.team_name}</Link>
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{team.wins}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{team.losses}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{formatValue('win_loss_percentage', team.win_loss_percentage)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{team.playoff_status ? 'Yes' : 'No'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p>No standings available for this season.</p>
       )}
 
-      <h2>League Leaders</h2>
+      <h2 style={{marginTop: '20px'}}>League Leaders (Top 10)</h2>
       {leagueLeaders.length > 0 ? (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Player</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>PTS</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>TRB</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>AST</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leagueLeaders.map((player, index) => (
-              <tr key={index}>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                  <Link to={`/players/${player.player_id}`}>{player.player_name}</Link>
-                </td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{player.points_per_game}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{player.rebounds_per_game}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{player.assists_per_game}</td>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+            <thead>
+              <tr>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('player_name', 'leaders')}
+                >
+                  {formatHeader('player_name')} {sortConfigLeaders.key === 'player_name' ? (sortConfigLeaders.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('points_per_game', 'leaders')}
+                >
+                  {formatHeader('points_per_game')} {sortConfigLeaders.key === 'points_per_game' ? (sortConfigLeaders.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('rebounds_per_game', 'leaders')}
+                >
+                  {formatHeader('rebounds_per_game')} {sortConfigLeaders.key === 'rebounds_per_game' ? (sortConfigLeaders.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
+                <th
+                  style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left', cursor: 'pointer' }}
+                  onClick={() => requestSort('assists_per_game', 'leaders')}
+                >
+                  {formatHeader('assists_per_game')} {sortConfigLeaders.key === 'assists_per_game' ? (sortConfigLeaders.direction === 'ascending' ? ' ▲' : ' ▼') : ''}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sortedData(leagueLeaders, sortConfigLeaders).map((player, index) => (
+                <tr key={player.player_id}>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                    <Link to={`/players/${player.player_id}`}>{player.player_name}</Link>
+                  </td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{formatValue('points_per_game', player.points_per_game)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{formatValue('rebounds_per_game', player.rebounds_per_game)}</td>
+                  <td style={{ border: '1px solid #ddd', padding: '8px' }}>{formatValue('assists_per_game', player.assists_per_game)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p>No league leaders available for this season.</p>
       )}
 
-      <div>
+      <div style={{ marginTop: '20px' }}>
         <Link to={`/playoffs/${year}`}>View {year} Playoffs</Link>
       </div>
     </div>
