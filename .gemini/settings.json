@@ -1,6 +1,5 @@
 {
   "theme": "GitHub",
-  "autoAccept": true,
   "sandbox": false,
   "checkpointing": {
     "enabled": true
