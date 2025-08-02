@@ -3,3 +3,4 @@
 csv/play_by_play.csv
 node_modules
 .gemini/.env
+.gemini
