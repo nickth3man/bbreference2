@@ -1,0 +1,63 @@
+
+graph TD;
+
+subgraph "Source & Logic"
+    src_App_js["src/App.js"]:::fileNode
+    src_services_duckdbService_js["src/services/duckdbService.js"]:::fileNode
+    src_hooks_useQuery_js["src/hooks/useQuery.js"]:::fileNode
+    src_pages_PlayersIndex_js["src/pages/PlayersIndex.js"]:::fileNode
+    src_pages_PlayerPage_js["src/pages/PlayerPage.js"]:::fileNode
+    src_pages_TeamsIndex_js["src/pages/TeamsIndex.js"]:::fileNode
+    src_pages_TeamFranchisePage_js["src/pages/TeamFranchisePage.js"]:::fileNode
+    src_pages_TeamSeasonPage_js["src/pages/TeamSeasonPage.js"]:::fileNode
+    src_pages_SeasonPage_js["src/pages/SeasonPage.js"]:::fileNode
+    src_pages_DraftsIndex_js["src/pages/DraftsIndex.js"]:::fileNode
+    src_pages_DraftPage_js["src/pages/DraftPage.js"]:::fileNode
+    src_pages_PlayoffPage_js["src/pages/PlayoffPage.js"]:::fileNode
+    src_pages_LeadersPage_js["src/pages/LeadersPage.js"]:::fileNode
+    src_components_StatsTable_js["src/components/StatsTable.js"]:::fileNode
+    src_utils_dataLinks_js["src/utils/dataLinks.js"]:::fileNode
+end
+
+subgraph "Build & Dependencies"
+    package_json["package.json"]:::dependencyNode
+    package_lock_json["package-lock.json"]:::dependencyNode
+end
+
+subgraph "Documentation & Config"
+    README_md["README.md"]:::fileNode
+    architecture_md["architecture.md"]:::fileNode
+    PRD_md["PRD.md"]:::fileNode
+    docs_design_md["docs/design.md"]:::fileNode
+    docs_table_component_spec_md["docs/table-component-spec.md"]:::fileNode
+    docs_toml_file_fix_md["docs/toml-file-fix.md"]:::fileNode
+    _gitignore[".gitignore"]:::fileNode
+end
+
+src_App_js --"imports"--> src_services_duckdbService_js
+src_App_js --"imports"--> src_pages_PlayersIndex_js
+src_App_js --"imports"--> src_pages_PlayerPage_js
+src_App_js --"imports"--> src_pages_TeamsIndex_js
+src_App_js --"imports"--> src_pages_TeamFranchisePage_js
+src_App_js --"imports"--> src_pages_TeamSeasonPage_js
+src_App_js --"imports"--> src_pages_SeasonPage_js
+src_App_js --"imports"--> src_pages_DraftsIndex_js
+src_App_js --"imports"--> src_pages_DraftPage_js
+src_App_js --"imports"--> src_pages_PlayoffPage_js
+src_App_js --"imports"--> src_pages_LeadersPage_js
+
+src_hooks_useQuery_js --"imports"--> src_services_duckdbService_js
+
+src_pages_PlayersIndex_js --"imports"--> src_hooks_useQuery_js
+src_pages_PlayersIndex_js --"imports"--> src_components_StatsTable_js
+src_pages_PlayerPage_js --"imports"--> src_services_duckdbService_js
+src_pages_TeamsIndex_js --"imports"--> src_hooks_useQuery_js
+src_pages_TeamFranchisePage_js --"imports"--> src_services_duckdbService_js
+src_pages_TeamSeasonPage_js --"imports"--> src_services_duckdbService_js
+src_pages_SeasonPage_js --"imports"--> src_services_duckdbService_js
+src_pages_DraftsIndex_js --"imports"--> src_hooks_useQuery_js
+src_pages_DraftPage_js --"imports"--> src_services_duckdbService_js
+src_pages_PlayoffPage_js --"imports"--> src_hooks_useQuery_js
+src_pages_LeadersPage_js --"imports"--> src_hooks_useQuery_js
+
+src_components_StatsTable_js --"imports"--> src_components_StatsTable_css

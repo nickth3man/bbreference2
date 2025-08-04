@@ -39,7 +39,8 @@ This document outlines the high-level architecture and project structure for the
 *   **Purpose:** Renders the application visually, mirroring Basketball-Reference.com's pages [PRD.md:61-112](PRD.md:61-112). Developed with React, potentially leveraging Webflow-designed structures.
 *   **Key Sub-Modules:**
     *   **Layout & Navigation:** Components forming the application shell, including header, navigation menu (linking to Players, Teams, Seasons, Drafts, Playoffs), and footer.
-    *   **Generic Table Display Components (`StatsTable.js`):** Reusable React components for presenting tabular data with features like sorting, filtering, and potentially pagination/infinite scroll for large datasets. **Must implement Basketball-Reference.com styling:**
+    *   **Generic Table Display Components (`StatsTable.js`):** A reusable, "dumb" React component for presenting tabular data. It receives all data and configuration via props and is not responsible for any data fetching or manipulation.
+        *   **CRITICAL:** All sorting and filtering logic is handled by the `useQuery` hook, not by this component. It only receives the final, sorted data and a `requestSort` function to communicate user intent back to the hook.
         *   Alternating row colors (white/#f0f0f0 stripes)
         *   Right-aligned numeric columns with consistent decimal places
         *   **CRITICAL: All per-game stats must display with exactly 1 decimal place (e.g., 7.0, 12.5, 0.9) - never as whole numbers**
@@ -70,10 +71,14 @@ This document outlines the high-level architecture and project structure for the
     *   Generates internal application links (e.g., from a player ID to their detailed page).
     *   Manages complexities of team franchise linking to unify historical team codes under a consistent franchise ID [PRD.md:121-122](PRD.md:121-122).
 
-### Utility Hooks (`src/hooks/useDuckDB.js`)
-*   **Purpose:** Custom React Hooks that encapsulate the logic for fetching data from the `duckdbService` within React components, managing loading states and errors.
+### Utility Hooks (`src/hooks/useQuery.js`)
+*   **Purpose:** A custom React Hook that acts as the primary data-fetching mechanism for the entire application. It encapsulates all logic for querying the `duckdbService`, managing loading/error states, and handling dynamic data manipulations like sorting and filtering.
 *   **Key Responsibilities:**
-    *   Simplifies data retrieval for components, abstracting direct interaction with the DuckDB service.
+    *   Accepts a base SQL query and optional parameters.
+    *   Manages its own internal state for sorting (`sortConfig`).
+    *   Exposes a `requestSort` function to allow parent components to trigger sort changes.
+    *   Dynamically constructs the final SQL query by appending `ORDER BY` clauses based on its internal `sortConfig`.
+    *   Abstracts away all direct interaction with the `duckdbService` from the UI components.
 
 ### Supplementary CSV Handling (PapaParse - `src/services/csvUtils.js`)
 *   **Purpose:** Primarily for CSV export functionality (e.g., exporting displayed table data to CSV). Can serve as a fallback for initial CSV ingestion if DuckDB-WASM's native reader encounters limitations [PRD.md:151-157](PRD.md:151-157).
@@ -150,22 +155,22 @@ The React frontend directly interacts with the embedded DuckDB-WASM instance for
 
 ```mermaid
 graph TD
-    A[React UI Component] --> B{Call useDuckDB Query Hook (e.g., fetchPlayerStats)};
-    B --> C[useDuckDB Hook (translates to SQL and calls duckdbService)];
-    C --> D[duckdbService (executes SQL query on DuckDB-WASM)];
-    D --> E[DuckDB-WASM Web Worker (Executes SQL, fetches from persistent DB)];
-    E -- Query Results (Arrow/JSON) --> F[duckdbService (returns data)];
-    F --> G[useDuckDB Hook (updates component state)];
-    G --> H[React UI Component (re-renders with data)];
+    A[React UI Component] --> B{Call useQuery Hook w/ Base SQL & Filter Params};
+    B --> C{useQuery Hook Manages Sort State & Constructs Final SQL};
+    C --> D[duckdbService (executes final SQL query)];
+    D --> E[DuckDB-WASM Web Worker (Executes SQL)];
+    E -- Query Results --> F[duckdbService (returns data)];
+    F --> G{useQuery Hook (updates component state w/ data & sortConfig)};
+    G --> H[React UI Component (re-renders with sorted data)];
 ```
 
 **Steps:**
-1.  **Component Data Request:** A React UI component (e.g., `PlayerDetail.js`) needs to display data. It calls a custom hook (e.g., `useDuckDB()`) or directly invokes a method from `duckdbService.js`.
-2.  **SQL Generation:** The hook/service constructs the appropriate SQL query, often parameterized (e.g., `SELECT * FROM PlayerSeasonStats WHERE player_id = ? AND season_id >= ?;`).
-3.  **Query Execution:** The SQL query is sent to the DuckDB-WASM instance (running in a Web Worker) via its asynchronous API [PRD.md:104](PRD.md:104).
-4.  **Local Data Retrieval:** DuckDB-WASM executes the query against the in-browser database. Its columnar storage and internal optimizations like zone maps ensure efficient, sub-second query execution times even on large datasets [PRD.md:9](PRD.md:9), [PRD.md:115](PRD.md:115).
-5.  **Result Handling:** Query results are returned (typically as Arrow tables or JSON objects) to the `duckdbService`, which then relays them back to the React component via the hook.
-6.  **UI Update:** The React component receives the data, updates its state, and re-renders to display the fetched statistics. Interactive elements like sorting and filtering on tables directly translate to new DuckDB queries, providing immediate visual feedback and real-time data manipulation [PRD.md:69](PRD.md:69), [PRD.md:110](PRD.md:110).
+1.  **Component Data Request:** A React UI component (e.g., `PlayersIndex.js`) needs to display data. It calls the `useQuery()` hook, providing a base SQL query and any parameters for filtering.
+2.  **SQL Construction & State Management:** The `useQuery` hook takes the base SQL. It manages the current sorting state (`sortConfig`). When a sort is requested via the `requestSort` function it provides, it updates its state and dynamically constructs the final SQL query by appending the correct `ORDER BY` clause.
+3.  **Query Execution:** The final, complete SQL query is sent to the `duckdbService` for execution.
+4.  **Local Data Retrieval:** DuckDB-WASM executes the query efficiently against the in-browser database.
+5.  **Result Handling:** The results are returned to the `duckdbService` and then to the `useQuery` hook.
+6.  **UI Update:** The `useQuery` hook updates its internal state, causing the calling React component to re-render. The component receives the final, sorted data and the current `sortConfig` and `requestSort` function to pass down to the `StatsTable`.
 
 ## Security & Compliance Considerations
 

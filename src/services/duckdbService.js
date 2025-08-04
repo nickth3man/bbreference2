@@ -35,7 +35,7 @@ export async function initializeDuckDB() {
 
         // Create a new DuckDB instance
         const bundle = await getJsDelivrBundles();
-        const worker = await duckdb.createWorker(bundle.mvp.mainWorker);
+        const worker = await createWorker(bundle.mvp.mainWorker);
         db = new AsyncDuckDB(logger, worker);
         await db.instantiate(bundle.mvp.mainModule, bundle.mvp.pthreadWorker);
 
@@ -89,7 +89,7 @@ async function createTablesAndIngestData() {
         { name: 'player.csv', tableName: 'PlayersRaw' }, // This file has 'slug' and 'hof' too
 
         // Team Data
-        { name: 'team_abbrev.csv', tableName: 'TeamAbbrev' }, // Team abbreviation to full name mapping (e.g., BRK -> Brooklyn Nets)
+        { name: 'Team Abbrev.csv', tableName: 'TeamAbbrev' }, // Team abbreviation to full name mapping (e.g., BRK -> Brooklyn Nets)
         { name: 'team_details.csv', tableName: 'TeamDetails' }, // More team details (e.g., arena)
         { name: 'team_history.csv', tableName: 'FranchiseMetadata' }, // team_id, city, nickname, year_founded, year_active_till 
         { name: 'Team Summaries.csv', tableName: 'TeamSummaries' }, // Season summaries for teams, including W/L
@@ -124,15 +124,23 @@ async function createTablesAndIngestData() {
     for (const file of csvFiles) {
         try {
             console.log(`Fetching ${file.name}...`);
-            const response = await fetch(`${VIRTUAL_BASE_PATH}${encodeURIComponent(file.name)}`);
+            const encodedFileName = encodeURIComponent(file.name);
+            const response = await fetch(`${VIRTUAL_BASE_PATH}${encodedFileName}`);
             if (!response.ok) {
                 if (file.optional) {
-                    console.warn(`Optional file ${file.name} not found, skipping.`);
+                    console.warn(`Optional file ${file.name} not found (${response.status}), skipping.`);
                     continue;
                 }
-                throw new Error(`HTTP error! status: ${response.status} for ${file.name}`);
+                console.error(`Failed to fetch ${file.name}: HTTP ${response.status}`);
+                console.error(`Attempted URL: ${VIRTUAL_BASE_PATH}${encodedFileName}`);
+                throw new Error(`HTTP error! status: ${response.status} for ${file.name}. Check filename casing and spaces.`);
             }
             const csvContent = await response.text();
+            
+            if (!csvContent || csvContent.trim().length === 0) {
+                console.warn(`File ${file.name} is empty, skipping.`);
+                continue;
+            }
 
             console.log(`Registering ${file.name} as virtual file...`);
             await db.registerFileText(file.name, csvContent);

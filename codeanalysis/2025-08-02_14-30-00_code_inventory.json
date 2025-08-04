@@ -1,0 +1,247 @@
+
+{
+  "metadata": {
+    "timestamp": "2025-08-02T14:30:00Z",
+    "repoName": "bbreference2"
+  },
+  "files": [
+    {
+      "path": "src/App.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "App", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "./services/duckdbService",
+        "./pages/PlayersIndex",
+        "./pages/PlayerPage",
+        "./pages/TeamsIndex",
+        "./pages/TeamFranchisePage",
+        "./pages/TeamSeasonPage",
+        "./pages/SeasonPage",
+        "./pages/DraftsIndex",
+        "./pages/DraftPage",
+        "./pages/PlayoffPage",
+        "./pages/LeadersPage"
+      ]
+    },
+    {
+      "path": "src/services/duckdbService.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "initializeDuckDB", "type": "Function" },
+        { "name": "createTablesAndIngestData", "type": "Function" },
+        { "name": "executeQuery", "type": "Function" }
+      ],
+      "imports": [
+        "@duckdb/duckdb-wasm"
+      ]
+    },
+    {
+      "path": "src/hooks/useQuery.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "useQuery", "type": "Hook" }
+      ],
+      "imports": [
+        "react",
+        "../services/duckdbService"
+      ]
+    },
+    {
+      "path": "src/pages/PlayersIndex.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "PlayersIndex", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "../hooks/useQuery",
+        "react-router-dom",
+        "../components/StatsTable"
+      ]
+    },
+    {
+      "path": "src/pages/PlayerPage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "PlayerPage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../services/duckdbService"
+      ]
+    },
+    {
+      "path": "src/pages/TeamsIndex.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "TeamsIndex", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../hooks/useQuery"
+      ]
+    },
+    {
+      "path": "src/pages/TeamFranchisePage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "TeamFranchisePage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../services/duckdbService"
+      ]
+    },
+    {
+      "path": "src/pages/TeamSeasonPage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "TeamSeasonPage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../services/duckdbService"
+      ]
+    },
+    {
+      "path": "src/pages/SeasonPage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "SeasonPage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../services/duckdbService"
+      ]
+    },
+    {
+      "path": "src/pages/DraftsIndex.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "DraftsIndex", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../hooks/useQuery"
+      ]
+    },
+    {
+      "path": "src/pages/DraftPage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "DraftPage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../services/duckdbService"
+      ]
+    },
+    {
+      "path": "src/pages/PlayoffPage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "PlayoffPage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../hooks/useQuery"
+      ]
+    },
+    {
+      "path": "src/pages/LeadersPage.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "LeadersPage", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../hooks/useQuery"
+      ]
+    },
+    {
+      "path": "src/components/StatsTable.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "StatsTable", "type": "FunctionComponent" }
+      ],
+      "imports": [
+        "react",
+        "./StatsTable.css"
+      ]
+    },
+    {
+      "path": "src/utils/dataLinks.js",
+      "type": "JavaScript",
+      "constructs": [
+        { "name": "getPlayerUrl", "type": "Function" },
+        { "name": "getTeamUrl", "type": "Function" },
+        { "name": "getFranchiseUrl", "type": "Function" },
+        { "name": "getSeasonUrl", "type": "Function" },
+        { "name": "getDraftUrl", "type": "Function" },
+        { "name": "getPlayoffUrl", "type": "Function" },
+        { "name": "extractPlayerId", "type": "Function" },
+        { "name": "extractTeamId", "type": "Function" },
+        { "name": "formatSeason", "type": "Function" },
+        { "name": "parseSeason", "type": "Function" },
+        { "name": "getCurrentSeason", "type": "Function" },
+        { "name": "isValidSeason", "type": "Function" }
+      ],
+      "imports": []
+    },
+    {
+      "path": "package.json",
+      "type": "Config",
+      "constructs": [],
+      "imports": []
+    },
+    {
+      "path": "README.md",
+      "type": "Documentation",
+      "constructs": [],
+      "imports": []
+    },
+    {
+      "path": "architecture.md",
+      "type": "Documentation",
+      "constructs": [],
+      "imports": []
+    },
+    {
+      "path": "PRD.md",
+      "type": "Documentation",
+      "constructs": [],
+      "imports": []
+    },
+    {
+      "path": "docs/design.md",
+      "type": "Documentation",
+      "constructs": [],
+      "imports": []
+    },
+    {
+      "path": "docs/table-component-spec.md",
+      "type": "Documentation",
+      "constructs": [],
+      "imports": []
+    },
+    {
+      "path": "docs/toml-file-fix.md",
+      "type": "Documentation",
+      "constructs": [],
+      "imports": []
+    }
+  ]
+}

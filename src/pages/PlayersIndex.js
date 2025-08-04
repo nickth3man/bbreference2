@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { useDuckDB } from '../hooks/useDuckDB';
+import { useQuery } from '../hooks/useQuery';
 import { Link } from 'react-router-dom';
 import StatsTable from '../components/StatsTable';
 
 const PlayersIndex = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { data: players, loading, error } = useDuckDB(
-    `SELECT player_id, player_name, is_active, is_hall_of_famer FROM Players WHERE player_name LIKE ? COLLATE NOCASE ORDER BY player_name ASC`,
+  const { 
+    data: players, 
+    loading, 
+    error, 
+    sortConfig, 
+    requestSort 
+  } = useQuery(
+    `SELECT player_id, player_name, is_active, is_hall_of_famer FROM Players WHERE player_name LIKE ? COLLATE NOCASE`,
     [`%${searchTerm}%`]
   );
 
@@ -23,6 +29,16 @@ const PlayersIndex = () => {
         </Link>
       ),
     },
+    {
+      key: 'is_active',
+      label: 'Active',
+      sortable: true,
+    },
+    {
+      key: 'is_hall_of_famer',
+      label: 'HoF',
+      sortable: true,
+    },
   ];
 
   if (loading) return <div>Loading players...</div>;
@@ -37,7 +53,12 @@ const PlayersIndex = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <StatsTable data={players} columns={columns} />
+      <StatsTable 
+        data={players} 
+        columns={columns} 
+        sortConfig={sortConfig} 
+        requestSort={requestSort} 
+      />
     </div>
   );
 };

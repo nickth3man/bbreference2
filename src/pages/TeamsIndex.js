@@ -1,40 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { executeQuery } from '../services/duckdbService';
+import { useQuery } from '../hooks/useQuery';
 
 const TeamsIndex = () => {
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        setLoading(true);
-        // Query to get distinct team codes, team names, and their earliest/latest years from TeamSeasonRecords.
-        // This table is created from TeamSummaries in duckdbService.js and contains season-level team data.
-        const query = `
+  const [searchTerm, setSearchTerm] = useState('');
+  const { data: teams, loading, error } = useQuery(`
           SELECT
             team_code,
             team_name,
             MIN(CAST(season_id AS INTEGER)) AS start_year,
             MAX(CAST(season_id AS INTEGER)) AS end_year
           FROM TeamSeasonRecords
+          WHERE team_name LIKE ? COLLATE NOCASE
           GROUP BY team_code, team_name
           ORDER BY team_name ASC;
-        `;
-        const result = await executeQuery(query);
-        setTeams(result);
-      } catch (err) {
-        console.error("Error fetching teams:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeams();
-  }, []);
+        `, [`%${searchTerm}%`]);
 
   if (loading) return <div>Loading teams...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -42,6 +22,12 @@ const TeamsIndex = () => {
   return (
     <div>
       <h1>Teams Index</h1>
+      <input
+        type="text"
+        placeholder="Search teams..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <ul>
         {teams.map((team) => (
           <li key={team.team_code}>

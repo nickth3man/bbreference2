@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Codebase Analysis Report</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #fdfdfd; }
+        #report-container { display: flex; width: 98%; max-width: 1800px; gap: 16px; margin-top: 20px; }
+        #graph-container { flex-grow: 1; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background-color: #fff; }
+        #sidebar { width: 400px; flex-shrink: 0; border: 1px solid #ddd; padding: 10px; border-radius: 8px; max-height: 85vh; overflow-y: auto; background-color: #fff; }
+        h1, h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        #analysis-report ul { list-style-type: none; padding-left: 0; }
+        #analysis-report h3 { border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px;}
+        #analysis-report li { background-color: #f9f9f9; border: 1px solid #eee; padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 14px; }
+        #analysis-report strong { color: #c0392b; }
+        /* Mermaid Node Styling */
+        .classNode { fill:#DDA0DD; stroke:#8A2BE2; stroke-width:2px; }
+        .functionNode { fill:#87CEEB; stroke:#4682B4; stroke-width:2px; }
+        .dependencyNode { fill:#90EE90; stroke:#2E8B57; stroke-width:2px; }
+        .fileNode { fill:#FFFACD; stroke:#FFD700; stroke-width:2px; }
+    </style>
+</head>
+<body>
+    <h1>AI Code Cartographer Report</h1>
+    <div id="report-container">
+        <div id="graph-container">
+            <h2>Knowledge Graph</h2>
+            <!-- The raw source for this graph is also saved in knowledge_graph.mmd -->
+            <pre class="mermaid">
+%% --- PASTE YOUR GENERATED MERMAID SYNTAX HERE --- %%
+graph TD;
+
+subgraph "Source & Logic"
+    src_App_js["src/App.js"]:::fileNode
+    src_services_duckdbService_js["src/services/duckdbService.js"]:::fileNode
+    src_hooks_useQuery_js["src/hooks/useQuery.js"]:::fileNode
+    src_pages_PlayersIndex_js["src/pages/PlayersIndex.js"]:::fileNode
+    src_pages_PlayerPage_js["src/pages/PlayerPage.js"]:::fileNode
+    src_pages_TeamsIndex_js["src/pages/TeamsIndex.js"]:::fileNode
+    src_pages_TeamFranchisePage_js["src/pages/TeamFranchisePage.js"]:::fileNode
+    src_pages_TeamSeasonPage_js["src/pages/TeamSeasonPage.js"]:::fileNode
+    src_pages_SeasonPage_js["src/pages/SeasonPage.js"]:::fileNode
+    src_pages_DraftsIndex_js["src/pages/DraftsIndex.js"]:::fileNode
+    src_pages_DraftPage_js["src/pages/DraftPage.js"]:::fileNode
+    src_pages_PlayoffPage_js["src/pages/PlayoffPage.js"]:::fileNode
+    src_pages_LeadersPage_js["src/pages/LeadersPage.js"]:::fileNode
+    src_components_StatsTable_js["src/components/StatsTable.js"]:::fileNode
+    src_utils_dataLinks_js["src/utils/dataLinks.js"]:::fileNode
+end
+
+subgraph "Build & Dependencies"
+    package_json["package.json"]:::dependencyNode
+    package_lock_json["package-lock.json"]:::dependencyNode
+end
+
+subgraph "Documentation & Config"
+    README_md["README.md"]:::fileNode
+    architecture_md["architecture.md"]:::fileNode
+    PRD_md["PRD.md"]:::fileNode
+    docs_design_md["docs/design.md"]:::fileNode
+    docs_table_component_spec_md["docs/table-component-spec.md"]:::fileNode
+    docs_toml_file_fix_md["docs/toml-file-fix.md"]:::fileNode
+    _gitignore[".gitignore"]:::fileNode
+end
+
+src_App_js --"imports"--> src_services_duckdbService_js
+src_App_js --"imports"--> src_pages_PlayersIndex_js
+src_App_js --"imports"--> src_pages_PlayerPage_js
+src_App_js --"imports"--> src_pages_TeamsIndex_js
+src_App_js --"imports"--> src_pages_TeamFranchisePage_js
+src_App_js --"imports"--> src_pages_TeamSeasonPage_js
+src_App_js --"imports"--> src_pages_SeasonPage_js
+src_App_js --"imports"--> src_pages_DraftsIndex_js
+src_App_js --"imports"--> src_pages_DraftPage_js
+src_App_js --"imports"--> src_pages_PlayoffPage_js
+src_App_js --"imports"--> src_pages_LeadersPage_js
+
+src_hooks_useQuery_js --"imports"--> src_services_duckdbService_js
+
+src_pages_PlayersIndex_js --"imports"--> src_hooks_useQuery_js
+src_pages_PlayersIndex_js --"imports"--> src_components_StatsTable_js
+src_pages_PlayerPage_js --"imports"--> src_services_duckdbService_js
+src_pages_TeamsIndex_js --"imports"--> src_hooks_useQuery_js
+src_pages_TeamFranchisePage_js --"imports"--> src_services_duckdbService_js
+src_pages_TeamSeasonPage_js --"imports"--> src_services_duckdbService_js
+src_pages_SeasonPage_js --"imports"--> src_services_duckdbService_js
+src_pages_DraftsIndex_js --"imports"--> src_hooks_useQuery_js
+src_pages_DraftPage_js --"imports"--> src_services_duckdbService_js
+src_pages_PlayoffPage_js --"imports"--> src_hooks_useQuery_js
+src_pages_LeadersPage_js --"imports"--> src_hooks_useQuery_js
+
+src_components_StatsTable_js --"imports"--> src_components_StatsTable_css
+            </pre>
+        </div>
+        <div id="sidebar">
+            <h2>Architectural Analysis</h2>
+            <div id="analysis-report">
+                <!-- %% --- PASTE YOUR GENERATED SIDEBAR REPORT HTML HERE --- %% -->
+                <h3>High-Coupling Candidates</h3>
+                <ul>
+                    <li><strong>src/App.js:</strong> This file imports a large number of page components, which is typical for a central routing file in a React application.</li>
+                </ul>
+                <h3>Stale Files</h3>
+                <ul>
+                    <li>No stale files were identified. All analyzed files have recent commits.</li>
+                </ul>
+                <h3>Orphan Entities</h3>
+                <ul>
+                    <li>No orphan entities were identified.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            mermaid: {
+              curve: 'basis'
+            },
+            htmlLabels: true
+        });
+    </script>
+</body>
+</html>

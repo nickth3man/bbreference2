@@ -48,3 +48,120 @@ After performing the setup steps:
     ```
 
 The `stats.duckdb` file will be created and persisted in the browser's IndexedDB.
+
+## StatsTable Component Usage
+
+The `StatsTable` component is a reusable table component that matches Basketball-Reference.com's styling and functionality.
+
+### Basic Usage
+
+```javascript
+import StatsTable from './components/StatsTable';
+import useQuery from './hooks/useQuery';
+
+function MyComponent() {
+  // Use the useQuery hook to fetch and manage sorted data
+  const { data, loading, error, sortConfig, requestSort } = useQuery(
+    "SELECT * FROM PlayerSeasonStats WHERE player_id = ?",
+    ['jamesle01']
+  );
+
+  // Define column specifications
+  const columns = [
+    { key: 'season', label: 'Season', type: 'text', sortable: true },
+    { key: 'team', label: 'Team', type: 'link', sortable: true, 
+      linkPath: (value) => `/teams/${value}` },
+    { key: 'ppg', label: 'PPG', type: 'numeric', decimals: 1, sortable: true },
+    { key: 'rpg', label: 'RPG', type: 'numeric', decimals: 1, sortable: true },
+    { key: 'apg', label: 'APG', type: 'numeric', decimals: 1, sortable: true }
+  ];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <StatsTable
+      data={data}
+      columns={columns}
+      sortConfig={sortConfig}
+      requestSort={requestSort}
+      exportable={true}
+      exportFilename="player-stats"
+      caption="Season Statistics"
+    />
+  );
+}
+```
+
+### Props
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| data | Array | Yes | - | Array of objects to display |
+| columns | Array | Yes | - | Column definitions |
+| sortConfig | Object | Yes | - | Current sort state from useQuery |
+| requestSort | Function | Yes | - | Sort handler from useQuery |
+| exportable | Boolean | No | true | Show CSV export button |
+| exportFilename | String | No | 'stats' | Base filename for exports |
+| className | String | No | '' | Additional CSS classes |
+| caption | String | No | - | Table caption for accessibility |
+| responsive | Boolean | No | true | Enable responsive behavior |
+| mobileColumns | Array | No | [] | Column keys to show on mobile |
+
+### Column Definition
+
+```javascript
+{
+  key: 'ppg',              // Object property to display
+  label: 'PPG',            // Column header text
+  type: 'numeric',         // 'text' | 'numeric' | 'link'
+  sortable: true,          // Enable sorting
+  decimals: 1,             // Decimal places (0, 1, or 3)
+  linkPath: (val, row) => `/path`, // For link columns
+  formatter: (val, row) => string, // Custom formatter
+  mobileHide: true        // Hide on mobile devices
+}
+```
+
+### Formatting Rules
+
+- **Per-game stats**: Always displayed with 1 decimal place (e.g., 25.7, 7.0)
+- **Percentages**: Displayed with 3 decimal places (e.g., 0.456)
+- **Totals**: Displayed as integers (e.g., 82)
+- **Missing data**: Displayed as "-"
+
+### Demo
+
+View a live demo of the StatsTable component at `/demo/stats-table` when running the development server.
+
+## TODOs and Future Enhancements
+
+### StatsTable Component
+- [ ] Virtual scrolling for tables with 1000+ rows
+- [ ] Advanced pagination with configurable page sizes
+- [ ] Column resizing functionality
+- [ ] Frozen/pinned columns for horizontal scrolling
+- [ ] Advanced filtering UI (multi-column filters)
+- [ ] Keyboard navigation improvements
+- [ ] Print-friendly styling
+- [ ] Dark mode support
+
+### Accessibility
+- [ ] Screen reader announcements for sort changes
+- [ ] Keyboard shortcuts for common actions
+- [ ] High contrast mode support
+- [ ] Focus management improvements
+
+### Performance
+- [ ] Memoization of expensive calculations
+- [ ] Web Worker for CSV export of large datasets
+- [ ] Lazy loading for table rows
+- [ ] Progressive enhancement for slow connections
+
+### Additional Features
+- [ ] Copy to clipboard functionality
+- [ ] Column visibility toggles
+- [ ] Save table preferences to localStorage
+- [ ] Advanced export options (Excel, PDF)
+- [ ] Comparison mode (highlight differences between rows)
+- [ ] Inline editing capabilities (if needed)

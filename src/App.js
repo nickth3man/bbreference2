@@ -13,6 +13,7 @@ import DraftsIndex from './pages/DraftsIndex';
 import DraftPage from './pages/DraftPage';
 import PlayoffPage from './pages/PlayoffPage';
 import LeadersPage from './pages/LeadersPage';
+import StatsTableDemo from './pages/StatsTableDemo';
 
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
                             <li style={{ margin: '0 10px' }}><Link to="/drafts">Drafts</Link></li>
                             <li style={{ margin: '0 10px' }}><Link to="/playoffs/2023">Playoffs (2023)</Link></li> {/* Example for a specific playoff year */}
                             <li style={{ margin: '0 10px' }}><Link to="/leaders">Leaders</Link></li>
+                            <li style={{ margin: '0 10px' }}><Link to="/demo/stats-table">Table Demo</Link></li>
                         </ul>
                     </nav>
                     <h1>Local Basketball Reference Stats App</h1>
@@ -72,6 +74,7 @@ function App() {
                         <Route path="/drafts/:year" element={<DraftPage />} />
                         <Route path="/playoffs/:year" element={<PlayoffPage />} />
                         <Route path="/leaders" element={<LeadersPage />} />
+                        <Route path="/demo/stats-table" element={<StatsTableDemo />} />
                         {/* Add more routes here as needed */}
                     </Routes>
                 </main>

@@ -4,11 +4,12 @@
   "private": true,
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.28.0",
+    "gemini-code-flow": "^0.1.0",
     "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
-    "react-scripts": "^5.0.1",
+    "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -37,6 +38,10 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.4",
-    "@testing-library/react": "^16.3.0"
+    "@testing-library/react": "^13.4.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.js"]
   }
 }

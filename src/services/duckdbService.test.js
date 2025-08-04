@@ -1,7 +1,8 @@
+jest.mock('./duckdbService');
 
 // src/services/duckdbService.test.js
 
-import { initDB, query } from './duckdbService';
+import { initializeDuckDB, executeQuery } from './duckdbService';
 import { AsyncDuckDB } from '@duckdb/duckdb-wasm';
 
 jest.mock('@duckdb/duckdb-wasm');
@@ -13,7 +14,7 @@ describe('duckdbService', () => {
 
   beforeEach(async () => {
     mockDb = new AsyncDuckDB();
-    await initDB();
+    await initializeDuckDB();
   });
 
   afterEach(() => {
@@ -26,7 +27,7 @@ describe('duckdbService', () => {
 
   it('should execute a query', async () => {
     const mockConnection = await mockDb.connect();
-    await query('SELECT * FROM test');
+    await executeQuery('SELECT * FROM test');
     expect(mockConnection.query).toHaveBeenCalledWith('SELECT * FROM test');
   });
 
@@ -35,7 +36,7 @@ describe('duckdbService', () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockConnection.query.mockRejectedValue(new Error('Test Error'));
 
-    await expect(query('SELECT * FROM test')).rejects.toThrow('Test Error');
+    await expect(executeQuery('SELECT * FROM test')).rejects.toThrow('Test Error');
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error executing query: SELECT * FROM test', new Error('Test Error'));
 
     consoleErrorSpy.mockRestore();

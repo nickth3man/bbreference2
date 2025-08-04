@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { executeQuery } from '../services/duckdbService';
+import { useQuery } from '../hooks/useQuery';
 
 const PlayerPage = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ const PlayerPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('perGame'); // 'perGame', 'totals', 'advanced', 'playoffs'
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
   useEffect(() => {
     const fetchPlayerData = async () => {
@@ -163,6 +165,63 @@ const PlayerPage = () => {
 
     fetchPlayerData();
   }, [id]);
+
+  // Define allowed sortable columns for security
+  const allowedSortColumns = [
+    'season', 'lg', 'tm', 'pos', 'age', 'g', 'gs', 'mp', 'fg', 'fga', 'fg_pct', 
+    '3p', '3pa', '3p_pct', '2p', '2pa', '2p_pct', 'e_fg_percent', 'ft', 'fta', 'ft_pct',
+    'orb', 'drb', 'trb', 'ast', 'stl', 'blk', 'tov', 'pf', 'pts',
+    'per', 'ts_pct', '3p_ar', 'ft_ar', 'orb_pct', 'drb_pct', 'trb_pct',
+    'ast_pct', 'stl_pct', 'blk_pct', 'tov_pct', 'usg_pct', 'ows', 'dws',
+    'ws', 'ws_per_48', 'obpm', 'dbpm', 'bpm', 'vorp'
+  ];
+
+  const requestSort = (key) => {
+    // Only allow sorting on approved columns
+    if (!allowedSortColumns.includes(key)) {
+      console.warn(`Sorting not allowed on column: ${key}`);
+      return;
+    }
+    
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedData = (data, config) => {
+    if (!config.key || !data || data.length === 0) {
+      return data;
+    }
+    
+    return [...data].sort((a, b) => {
+      const aVal = a[config.key];
+      const bVal = b[config.key];
+      
+      // Handle null/undefined values
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return config.direction === 'ascending' ? 1 : -1;
+      if (bVal == null) return config.direction === 'ascending' ? -1 : 1;
+      
+      // Handle numeric values
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return config.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+      }
+      
+      // Handle string values
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      
+      if (aStr < bStr) {
+        return config.direction === 'ascending' ? -1 : 1;
+      }
+      if (aStr > bStr) {
+        return config.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
 
   
 
